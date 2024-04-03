@@ -7,7 +7,6 @@ class RgbCameraSensor:
     def __init__(self,world,vehicle,blueprints) -> None:
         self.parent = vehicle
         self.world = world
-        self.cameraData = {"image": np.zeros((1080, 720, 4))}
         self.RgbCameraSensor = blueprints.find('sensor.camera.rgb')
         self.RgbCameraSensor.set_attribute('image_size_x', '1080')
         self.RgbCameraSensor.set_attribute('image_size_y', '720')

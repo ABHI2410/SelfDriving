@@ -1,5 +1,4 @@
 import carla as carla
-import weakref as weakref
 import collections as collections
 import math as math
 
@@ -7,10 +6,10 @@ class CollisionDetector:
     def __init__(self,world,vehicle,blueprints) -> None:
         self.parent = vehicle
         self.world = world
+        self.history = []
         self.collisionSensor = blueprints.find('sensor.other.collision')
         self.sensor = self.world.spawn_actor(self.collisionSensor, carla.Transform(), attach_to=self.parent)
-        weak_self = weakref.ref(self)
-        self.sensor.listen(lambda event: CollisionDetector._collision_callback(weak_self, event))
+        self.sensor.listen(lambda event: self._collision_callback(event))
     
     def get_collision_history(self):
         history = collections.defaultdict(int)
@@ -21,11 +20,8 @@ class CollisionDetector:
     def destroy(self):
         self.sensor.destroy()
 
-    @staticmethod
-    def _collision_callback(weak_self, event):
-        self = weak_self()
-        if not self:
-            return
+
+    def _collision_callback(self, event):
         impulse = event.normal_impulse
         intensity = math.sqrt(impulse.x**2 + impulse.y**2 + impulse.z**2)
         self.history.append((event.frame, intensity))
