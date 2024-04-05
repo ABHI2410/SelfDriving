@@ -1,10 +1,5 @@
-import glob
-import os
-import sys
-import argparse
-import time
+
 from datetime import datetime
-import random
 import numpy as np
 from matplotlib import cm
 import open3d as o3d

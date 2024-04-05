@@ -20,7 +20,7 @@ class Vehicle:
         self.client = client
         self.world = client.get_world()
         self.blueprints = self.world.get_blueprint_library()
-        vehicle_blueprint = random.choice(self.blueprints.filter('vehicle.*'))
+        vehicle_blueprint = random.choice(self.blueprints.filter('*cooper_s*'))
         self.vehicle = self.world.try_spawn_actor(vehicle_blueprint, spawn_point)
         self.attach_sensors()
 

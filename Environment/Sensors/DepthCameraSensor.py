@@ -44,9 +44,9 @@ class DepthCameraSensor:
 
         # Calculate the average distance to obstacles
         self.average_distance = np.mean(depth_data)
-        print(f"Average distance to obstacles: {self.average_distance} meters")
-        if self.average_distance < 1.0:  # Threshold of 5 meters
-            print("Obstacle detected ahead!")
+        # print(f"Average distance to obstacles: {self.average_distance} meters")
+        # if self.average_distance < 1.0:  # Threshold of 5 meters
+        #     print("Obstacle detected ahead!")
 
     def get_average_distance(self):
         """Returns the average distance to obstacles."""

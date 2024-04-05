@@ -1,3 +1,6 @@
+import os 
+os.environ["SCENARIO_RUNNER_ROOT"] = "/home/carla/Desktop/Carla/scenario_runner-0.9.15/"
+
 import carla
 import random
 import cv2
@@ -6,7 +9,7 @@ import numpy as np
 import open3d as o3d
 import time
 from Environment.Actors.Vehicle import Vehicle
-
+from Environment.Scenarios.scenarios import start_scenario 
 class Carla:
     def __init__(self) -> None:
         self.client = carla.Client('localhost', 2000)
@@ -15,6 +18,9 @@ class Carla:
         spawn_point = random.choice(self.spawn_points)
         self.actor = Vehicle(self.client,spawn_point)
 
+    # def _scenario(self):
+    #     scenarios.followLeadingVehicle(self.client,self.world)
+
     def _game(self):
 
         while True:
@@ -22,17 +28,19 @@ class Carla:
             if cv2.waitKey(1) == ord('q'):
                 quit = True
                 break
+            spectator = self.world.get_spectator()
             rgb_image = self.actor.rgbCameraSensor.get_image()
-            semantic_lidar_image = self.actor.semanticLidarSensor.get_image()
-
+            # semantic_lidar_image = self.actor.semanticLidarSensor.get_image()
             steering_angle = 0
             v = self.actor.vehicle.get_velocity()
             speed = round(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2),0)
             rgb_image = cv2.putText(rgb_image, f"Speed: {str(int(speed))} kmh", (30,50),cv2.FONT_HERSHEY_COMPLEX,0.5,(255,255,255),1,cv2.LINE_AA)
             estimate_throttle = self.actor.maintain_speed(speed,20)
             self.actor.control(estimate_throttle,0)
-            self.actor.semanticLidarSensor.get_image()
-            cv2.imshow('Carla ',rgb_image)
+            vehicle_location = self.actor.vehicle.get_transform()
+            spectator.set_transform(carla.Transform(carla.Location(vehicle_location.location.x-5,vehicle_location.location.y,vehicle_location.location.z+40) , carla.Rotation(pitch=-90)))
+            # self.actor.semanticLidarSensor.get_image()
+            # cv2.imshow('Carla ',rgb_image)
             # cv2.imshow('Lidr', semantic_lidar_image)
 
         self.actor.destroy()
@@ -40,8 +48,9 @@ class Carla:
 
 
 obj = Carla()
-obj._game()
-
+start_scenario(obj.world,obj.actor)
+# obj._game()
+# obj._scenario()
 
 # ------------------------------------------- NEW CODE ------------------------------------------------------------------
 # import carla
