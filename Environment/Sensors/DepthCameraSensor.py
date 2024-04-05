@@ -1,5 +1,5 @@
 import carla
-
+import numpy as np
 
 class DepthCameraSensor:
     def __init__(self, vehicle, height=960, width=1280, fov=110, location=(0.0, 0.0, 2.5), rotation=(0.0, 0.0, 0.0)):
@@ -11,6 +11,7 @@ class DepthCameraSensor:
         self.rotation = carla.Rotation(*rotation)
         self.sensor = None
         self.init_sensor()
+        self.average_distance = None  # Added to store the average distance to obstacles
 
     def init_sensor(self):
         """
@@ -30,8 +31,27 @@ class DepthCameraSensor:
 
     def process_data(self, data):
         """
-        Processes the data from the depth camera sensor.
+        Processes the depth data from the depth camera sensor.
         """
-        # I need to add the logic to process the depth image data
-        # For simplicity, we're just printing the frame number
-        print(f"Depth Camera frame {data.frame}")
+        image_data = np.frombuffer(data.raw_data, dtype=np.dtype("uint8"))
+
+        # Reshape and discard the alpha channel
+        image_data = np.reshape(image_data, (data.height, data.width, 4))
+        image_data = image_data[:, :, :3]
+        # Convert to distances
+        depth_data = np.dot(image_data[..., :3], [0.299, 0.587, 0.114])
+        depth_data = depth_data * (1.0 / 255.0)  # Normalize
+
+        # Calculate the average distance to obstacles
+        self.average_distance = np.mean(depth_data)
+        print(f"Average distance to obstacles: {self.average_distance} meters")
+        if self.average_distance < 1.0:  # Threshold of 5 meters
+            print("Obstacle detected ahead!")
+
+    def get_average_distance(self):
+        """Returns the average distance to obstacles."""
+        return self.average_distance
+
+    def destroy(self):
+        """Destroys the sensor."""
+        self.sensor.destroy()

@@ -103,8 +103,19 @@ class SemanticLidarSensor:
         plt.close(fig)
 
         # Return the image array
-        return image_array 
+        return image_array
 
+    def get_semantic_summary(self):
+        """
+        Returns a summary of the semantic point cloud data.
+        """
+        # Count the number of points belonging to each semantic category
+        categories = np.unique(np.asarray(self.point_list.colors), axis=0)
+        summary = {}
+        for category in categories:
+            count = np.sum(np.all(np.asarray(self.point_list.colors) == category, axis=1))
+            summary[tuple(category)] = count
+        return summary
     def _semantic_lidar_callback(self,point_cloud):
         """Prepares a point cloud with semantic segmentation
         colors ready to be consumed by Open3D"""
