@@ -11,7 +11,6 @@ from Environment.Sensors.TrafficLightSensor import TrafficLightSensor
 from Environment.Sensors.SpeedLimitSensor import SpeedLimitSensor
 from Environment.Sensors.RadarSensor import RadarSensor
 from Environment.Sensors.LaneInvasionSensor import LaneInvasionSensor
-# from Environment.Sensors.PedestrianDetectionSensor import PedestrianDetectionSensor
 from Environment.Sensors.WeatherSensor import WeatherSensor
 
 
@@ -35,7 +34,6 @@ class Vehicle:
         self.speedLimitSensor = SpeedLimitSensor(self.vehicle)
         self.radarSensor = RadarSensor(self.world, self.vehicle)
         self.laneInvasionSensor = LaneInvasionSensor(self.world, self.vehicle)
-        # self.pedestrianDetectionSensor = PedestrianDetectionSensor(self.world, self.vehicle)
         self.weatherSensor = WeatherSensor(self.world)
 
     def maintain_speed(self, speed, preferred_speed):
@@ -61,5 +59,4 @@ class Vehicle:
         self.speedLimitSensor.destroy()
         self.radarSensor.destroy()
         self.laneInvasionSensor.destroy()
-        # self.pedestrianDetectionSensor.destroy()
         self.weatherSensor.destroy()
