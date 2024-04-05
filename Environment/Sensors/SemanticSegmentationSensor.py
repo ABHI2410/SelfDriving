@@ -1,0 +1,54 @@
+import carla
+import numpy as np
+
+
+class LaneDetectionSensor:
+    def __init__(self, vehicle, height=960, width=1280, fov=110, location=(0.0, 0.0, 2.5), rotation=(0.0, 0.0, 0.0)):
+        self.vehicle = vehicle
+        self.height = height
+        self.width = width
+        self.fov = fov
+        self.location = carla.Location(*location)
+        self.rotation = carla.Rotation(*rotation)
+        self.sensor = None
+        self.init_sensor()
+
+    def init_sensor(self):
+        """
+        Initializes the semantic segmentation sensor.
+        """
+        blueprint_library = self.vehicle.get_world().get_blueprint_library()
+        camera_bp = blueprint_library.find('sensor.camera.semantic_segmentation')
+        camera_bp.set_attribute('image_size_x', str(self.width))
+        camera_bp.set_attribute('image_size_y', str(self.height))
+        camera_bp.set_attribute('fov', str(self.fov))
+
+        transform = carla.Transform(self.location, self.rotation)
+        self.sensor = self.vehicle.get_world().spawn_actor(camera_bp, transform, attach_to=self.vehicle)
+        self.sensor.listen(lambda data: self.process_data(data))
+
+    def process_data(self, data):
+        """
+        Processes the data from the semantic segmentation sensor and returns lane status.
+        """
+        image_data = np.frombuffer(data.raw_data, dtype=np.dtype("uint8"))
+        image_data = np.reshape(image_data, (data.height, data.width, 4))
+        image_data = image_data[:, :, 2]  # Semantic segmentation channel
+
+        # Define return values based on vehicle's lane status
+        on_road = np.any(image_data == 7)
+        in_lane = np.any(image_data == 6)  # Assuming '6' is the label for road lanes
+
+        if on_road and in_lane:
+            print("Vehicle is correctly within a lane.")
+            return 2
+        elif on_road:
+            print("Vehicle is on the road but not in a lane.")
+            return 1
+        else:
+            print("Vehicle is off the road.")
+            return 0
+
+    def destroy(self):
+        if self.sensor:
+            self.sensor.destroy()
