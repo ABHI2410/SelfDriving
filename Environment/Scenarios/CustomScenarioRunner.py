@@ -16,11 +16,11 @@ from Environment.Sensors.WeatherSensor import WeatherSensor
 
 
 from Environment.Scenarios.CustomScenarioManager import CustomScenarioManager
-sys.path.append("/home/carla/Desktop/Carla/scenario_runner-0.9.15/")
+sys.path.append("/home/carla/Desktop/Carla/scenario_runner/")
 from scenario_runner import ScenarioRunner 
 from srunner.scenarios.open_scenario import OpenScenario
 from srunner.scenarios.route_scenario import RouteScenario
-from srunner.scenarios.osc2_scenario import OSC2Scenario
+# from srunner.scenarios.osc2_scenario import OSC2Scenario
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 
@@ -100,12 +100,6 @@ class CustomScenarioRunner(ScenarioRunner):
                 scenario = RouteScenario(world=self.world,
                                             config=config,
                                             debug_mode=self._args.debug)
-            elif self._args.openscenario2:
-                scenario = OSC2Scenario(world=self.world,
-                                        ego_vehicles=self.ego_vehicles,
-                                        config=config,
-                                        osc2_file=self._args.openscenario2,
-                                        timeout=100000)
             else:
                 scenario_class = self._get_scenario_class_or_fail(config.type)
                 scenario = scenario_class(world=self.world,

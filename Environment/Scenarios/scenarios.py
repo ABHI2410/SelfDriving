@@ -1,6 +1,6 @@
 import sys
 from Environment.Scenarios.CustomScenarioRunner import CustomScenarioRunner
-sys.path.append("/home/carla/Desktop/Carla/scenario_runner-0.9.15/")
+sys.path.append("/home/carla/Desktop/Carla/scenario_runner/")
 
 from srunner.tools.scenario_parser import ScenarioConfigurationParser
 from srunner.scenarios import *
@@ -62,11 +62,6 @@ ScenarioConfiguration
         self.subtype = None
         self.route_var_name = None
 '''
-
-
-
-
-
 
 
 class Scenario():

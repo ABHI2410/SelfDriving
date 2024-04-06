@@ -1,5 +1,5 @@
 import os 
-os.environ["SCENARIO_RUNNER_ROOT"] = "/home/carla/Desktop/Carla/scenario_runner-0.9.15/"
+os.environ["SCENARIO_RUNNER_ROOT"] = "/home/carla/Desktop/Carla/scenario_runner/"
 
 import carla
 import random

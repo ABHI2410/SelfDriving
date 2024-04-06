@@ -4,7 +4,7 @@ import time
 import py_trees
 import carla
 import sys
-sys.path.append("/home/carla/Desktop/Carla/scenario_runner-0.9.15/")
+sys.path.append("/home/carla/Desktop/Carla/scenario_runner/")
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
 from srunner.scenariomanager.timer import GameTime
@@ -28,7 +28,7 @@ class CustomScenarioManager(ScenarioManager):
         speed = round(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2),0)
         rgb_image = cv2.putText(rgb_image, f"Speed: {str(int(speed))} kmh", (30,50),cv2.FONT_HERSHEY_COMPLEX,0.5,(255,255,255),1,cv2.LINE_AA)
         
-        estimate_throttle = self.maintain_speed(speed,40)
+        estimate_throttle = self.maintain_speed(speed,20)
         self.ego_vehicles[0].apply_control(carla.VehicleControl(throttle=estimate_throttle, steer=0))
         vehicle_location = self.ego_vehicles[0].get_transform()
         spectator.set_transform(carla.Transform(carla.Location(vehicle_location.location.x-5,vehicle_location.location.y,vehicle_location.location.z+40) , carla.Rotation(pitch=-90)))
@@ -42,7 +42,7 @@ class CustomScenarioManager(ScenarioManager):
         # self.scene.vehicle.control(estimate_throttle, steering_angle)
 
         # Display sensor data
-        cv2.imshow('Carla', rgb_image)
+        # cv2.imshow('Carla', rgb_image)
 
     def run_scenario(self,sensors):
         """
