@@ -1,5 +1,6 @@
-import os 
-os.environ["SCENARIO_RUNNER_ROOT"] = "/home/carla/Desktop/Carla/scenario_runner/"
+import os
+from Constants import SCENARIO_RUNNER_PATH
+os.environ["SCENARIO_RUNNER_ROOT"] = SCENARIO_RUNNER_PATH
 
 import carla
 import random
