@@ -4,7 +4,8 @@ import time
 import py_trees
 import carla
 import sys
-sys.path.append("/home/carla/Desktop/Carla/scenario_runner/")
+from Constants import SCENARIO_RUNNER_PATH
+sys.path.append(SCENARIO_RUNNER_PATH)
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
 from srunner.scenariomanager.timer import GameTime

@@ -1,7 +1,7 @@
 import os
 import sys
 import traceback
-
+from Constants import SCENARIO_RUNNER_PATH
 from Environment.Sensors.CollisionDetector import CollisionDetector
 from Environment.Sensors.RgbCameraSensor import RgbCameraSensor
 from Environment.Sensors.GnssSensor import GnssSensor
@@ -16,7 +16,7 @@ from Environment.Sensors.WeatherSensor import WeatherSensor
 
 
 from Environment.Scenarios.CustomScenarioManager import CustomScenarioManager
-sys.path.append("/home/carla/Desktop/Carla/scenario_runner/")
+sys.path.append(SCENARIO_RUNNER_PATH)
 from scenario_runner import ScenarioRunner 
 from srunner.scenarios.open_scenario import OpenScenario
 from srunner.scenarios.route_scenario import RouteScenario

@@ -1,6 +1,7 @@
 import sys
+from Constants import SCENARIO_RUNNER_PATH
 from Environment.Scenarios.CustomScenarioRunner import CustomScenarioRunner
-sys.path.append("/home/carla/Desktop/Carla/scenario_runner/")
+sys.path.append(SCENARIO_RUNNER_PATH)
 
 from srunner.tools.scenario_parser import ScenarioConfigurationParser
 from srunner.scenarios import *
