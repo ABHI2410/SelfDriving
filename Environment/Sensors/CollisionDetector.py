@@ -5,12 +5,12 @@ import math
 
 class CollisionDetector:
     def __init__(self, world, vehicle, blueprints):
-        # print(type(vehicle))
+        print(type(vehicle))
         self.parent = vehicle
         self.world = world
         self.history = []
         self.collisionSensor = blueprints.find('sensor.other.collision')
-        self.sensor = self.world.spawn_actor(self.collisionSensor, carla.Transform(), attach_to=self.parent)
+        self.sensor = self.world.spawn_actor(self.collisionSensor, carla.Transform(), attach_to=vehicle)
         self.sensor.listen(lambda event: self._collision_callback(event))
 
     def get_collision_history(self):
