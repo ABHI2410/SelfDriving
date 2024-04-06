@@ -6,7 +6,17 @@ sys.path.append("/home/carla/Desktop/Carla/scenario_runner-0.9.15/")
 from scenario_runner import ScenarioRunner 
 from srunner.tools.scenario_parser import ScenarioConfigurationParser
 from srunner.scenarios import *
-
+from Environment.Sensors.CollisionDetector import CollisionDetector
+from Environment.Sensors.RgbCameraSensor import RgbCameraSensor
+from Environment.Sensors.GnssSensor import GnssSensor
+from Environment.Sensors.ImuSensor import ImuSensor
+from Environment.Sensors.SemanticLidarSensor import SemanticLidarSensor
+from Environment.Sensors.DepthCameraSensor import DepthCameraSensor
+from Environment.Sensors.TrafficLightSensor import TrafficLightSensor
+from Environment.Sensors.SpeedLimitSensor import SpeedLimitSensor
+from Environment.Sensors.RadarSensor import RadarSensor
+from Environment.Sensors.LaneInvasionSensor import LaneInvasionSensor
+from Environment.Sensors.WeatherSensor import WeatherSensor
 '''
 
 Scenarios: 
@@ -63,7 +73,7 @@ ScenarioConfiguration
         self.route_var_name = None
 '''
 class Scenario():
-    def __init__(self,scenario_name):
+    def __init__(self,world):
         self.additionalScenario='' 
         self.agent=None 
         self.agentConfig='' 
@@ -86,47 +96,50 @@ class Scenario():
         self.repetitions=1 
         self.route=None 
         self.route_id='' 
-        self.scenario=scenario_name
+        self.scenario='NoSignalJunctionCrossing'
         self.sync=False 
         self.timeout='10' 
         self.trafficManagerPort='8000' 
         self.trafficManagerSeed='0' 
         self.waitForEgo=False
-    
+        self.start_scenario(world)
 
+    def attach_sensors(self):
+        self.collisionSensor = CollisionDetector(self.world, self.vehicle, self.blueprints)
+        self.rgbCameraSensor = RgbCameraSensor(self.world, self.vehicle, self.blueprints)
+        self.gnssSensor = GnssSensor(self.world, self.vehicle, self.blueprints)
+        self.imuSensor = ImuSensor(self.world, self.vehicle, self.blueprints)
+        self.semanticLidarSensor = SemanticLidarSensor(self.world, self.vehicle, self.blueprints)
+        self.depthCameraSensor = DepthCameraSensor(self.vehicle)
+        self.trafficLightSensor = TrafficLightSensor(self.world, self.vehicle)
+        self.speedLimitSensor = SpeedLimitSensor(self.vehicle)
+        self.radarSensor = RadarSensor(self.world, self.vehicle)
+        self.laneInvasionSensor = LaneInvasionSensor(self.world, self.vehicle)
+        # self.pedestrianDetectionSensor = PedestrianDetectionSensor(self.world, self.vehicle)
+        self.weatherSensor = WeatherSensor(self.world)
 
-def attach_sensors(self):
-    self.collisionSensor = CollisionDetector(self.world, self.vehicle, self.blueprints)
-    self.rgbCameraSensor = RgbCameraSensor(self.world, self.vehicle, self.blueprints)
-    self.gnssSensor = GnssSensor(self.world, self.vehicle, self.blueprints)
-    self.imuSensor = ImuSensor(self.world, self.vehicle, self.blueprints)
-    self.semanticLidarSensor = SemanticLidarSensor(self.world, self.vehicle, self.blueprints)
-    self.depthCameraSensor = DepthCameraSensor(self.vehicle)
-    self.trafficLightSensor = TrafficLightSensor(self.world, self.vehicle)
-    self.speedLimitSensor = SpeedLimitSensor(self.vehicle)
-    self.radarSensor = RadarSensor(self.world, self.vehicle)
-    self.laneInvasionSensor = LaneInvasionSensor(self.world, self.vehicle)
-    # self.pedestrianDetectionSensor = PedestrianDetectionSensor(self.world, self.vehicle)
-    self.weatherSensor = WeatherSensor(self.world)
+    def start_scenario(self,world):
+        scenario_runner = None
+        result = False
+        self.world = world
+        self.blueprints = self.world.get_blueprint_library()
 
-def start_scenario(world,ego_vehicles):
-    scenario_runner = None
-    result = False
+        scene = ScenarioRunner(self)
+        configurations = ScenarioConfigurationParser.parse_scenario_configuration(
+                self.scenario,
+                self.configFile)
+        if configurations[0].ego_vehicles[0].rolename == "hero":
+             self.vehicle = configurations[0].ego_vehicles[0]
+             print(self.vehicle.model)
+             self.attach_sensors()
 
-    arguments = Scenario('FollowLeadingVehicle_1')
-    scene = ScenarioRunner(arguments)
-    configurations = ScenarioConfigurationParser.parse_scenario_configuration(
-            arguments.scenario,
-            arguments.configFile)
-    print(configurations[0].ego_vehicles[0])
-
-    if len(configurations) < 1:
-        print("Configuration for scenario {} cannot be found!".format(self._args.scenario))
+        if len(configurations) < 1:
+            print("Configuration for scenario {} cannot be found!".format(self._args.scenario))
+            return result
+        
+        for config in configurations:
+            for _ in range(scene._args.repetitions):
+                    scene.finished = False
+                    result = scene._load_and_run_scenario(config)
+            scene._cleanup()
         return result
-    
-    for config in configurations:
-        for _ in range(scene._args.repetitions):
-                scene.finished = False
-                result = scene._load_and_run_scenario(config)
-        scene._cleanup()
-    return result
