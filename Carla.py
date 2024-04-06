@@ -13,7 +13,8 @@ class Carla:
     def __init__(self) -> None:
         self.client = carla.Client('localhost', 2000)
         self.world = self.client.get_world()
-        self.scene = Scenario(self.world)
+        scenario = "ChangeLane_1"
+        self.scene = Scenario(self.world,scenario= scenario)
     
 
 obj = Carla()

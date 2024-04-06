@@ -66,7 +66,7 @@ ScenarioConfiguration
 
 
 class Scenario():
-    def __init__(self,world):
+    def __init__(self,world,scenario = "NoSignalJunctionCrossing"):
         self.additionalScenario='' 
         self.agent=None 
         self.agentConfig='' 
@@ -89,7 +89,7 @@ class Scenario():
         self.repetitions=1 
         self.route=None 
         self.route_id='' 
-        self.scenario='NoSignalJunctionCrossing'
+        self.scenario=scenario
         self.sync=False 
         self.timeout='10' 
         self.trafficManagerPort='8000' 
