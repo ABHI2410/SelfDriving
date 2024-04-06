@@ -1,7 +1,7 @@
 import carla
 
 class SpeedLimitSensor:
-    def __init__(self, vehicle):
+    def __init__(self, world,vehicle,blueprint):
         self.vehicle = vehicle
         self.speed_limit = 0.0
 

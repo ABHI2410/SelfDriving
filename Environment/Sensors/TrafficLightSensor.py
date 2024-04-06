@@ -1,7 +1,7 @@
 import carla
 
 class TrafficLightSensor:
-    def __init__(self, world, vehicle):
+    def __init__(self, world, vehicle,blueprint):
         self.vehicle = vehicle
         self.world = world
         self.traffic_light_state = "Unknown"

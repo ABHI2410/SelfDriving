@@ -1,9 +1,9 @@
 import carla
 class RadarSensor:
-    def __init__(self, world, vehicle):
+    def __init__(self, world, vehicle,blueprint):
         self.vehicle = vehicle
         self.world = world
-        radar_blueprint = self.world.get_blueprint_library().find('sensor.other.radar')
+        radar_blueprint = blueprint.find('sensor.other.radar')
         radar_blueprint.set_attribute('horizontal_fov', '35')
         radar_blueprint.set_attribute('vertical_fov', '20')
         self.sensor = self.world.spawn_actor(radar_blueprint, carla.Transform(carla.Location(x=2.0, z=1.0)), attach_to=self.vehicle)

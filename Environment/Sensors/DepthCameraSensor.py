@@ -2,8 +2,11 @@ import carla
 import numpy as np
 
 class DepthCameraSensor:
-    def __init__(self, vehicle, height=960, width=1280, fov=110, location=(0.0, 0.0, 2.5), rotation=(0.0, 0.0, 0.0)):
+    def __init__(self, world, vehicle, blueprint, height=960, width=1280, fov=110, location=(0.0, 0.0, 2.5), rotation=(0.0, 0.0, 0.0)):
+
         self.vehicle = vehicle
+        self.world = world
+        self.blueprint = blueprint
         self.height = height
         self.width = width
         self.fov = fov
@@ -17,7 +20,7 @@ class DepthCameraSensor:
         """
         Initializes the depth camera sensor.
         """
-        blueprint_library = self.vehicle.get_world().get_blueprint_library()
+        blueprint_library = self.blueprint
         depth_camera_bp = blueprint_library.find('sensor.camera.depth')
         depth_camera_bp.set_attribute('image_size_x', f'{self.width}')
         depth_camera_bp.set_attribute('image_size_y', f'{self.height}')
@@ -26,7 +29,7 @@ class DepthCameraSensor:
         # Transform relative to the vehicle
         transform = carla.Transform(self.location, self.rotation)
 
-        self.sensor = self.vehicle.get_world().spawn_actor(depth_camera_bp, transform, attach_to=self.vehicle)
+        self.sensor = self.world.spawn_actor(depth_camera_bp, transform, attach_to=self.vehicle)
         self.sensor.listen(lambda data: self.process_data(data))
 
     def process_data(self, data):

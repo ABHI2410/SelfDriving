@@ -5,7 +5,7 @@ import math
 
 class CollisionDetector:
     def __init__(self, world, vehicle, blueprints):
-        print(type(vehicle))
+        # print(type(vehicle))
         self.parent = vehicle
         self.world = world
         self.history = []
