@@ -1,8 +1,10 @@
 import carla
 import numpy as np
+import cv2 
+import colorsys
 
 class VehicleCameras:
-    def __init__(self, vehicle, world):
+    def __init__(self, world, vehicle):
         self.vehicle = vehicle
         self.world = world
         self.cameras = {}
@@ -36,19 +38,59 @@ class VehicleCameras:
             camera.listen(lambda image, name=position: self.process_image(image, name))
             self.cameras[position] = {'camera': camera, 'image': None}
 
+    def mask_specific_colors(self, image_array, colors_to_keep):
+        # Create an empty mask
+        image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
+        mask = np.zeros(image_array.shape[:2], dtype=np.uint8)
+
+        # For each color, add it to the mask
+        for color in colors_to_keep:
+            color_mask = cv2.inRange(image_array, color, color)
+            mask = cv2.bitwise_or(mask, color_mask)
+
+        # mask = 255-mask    
+
+        # Create a colored mask
+        colored_mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+
+        # Apply the mask to the image
+        masked_image = cv2.bitwise_and(image_array, colored_mask)
+        return masked_image
+
     def process_image(self, image, name):
         # Convert the semantic segmentation image to a NumPy array
+        image.convert(carla.ColorConverter.CityScapesPalette)
         image_array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
         image_array = np.reshape(image_array, (image.height, image.width, 4))
+        
         image_array = image_array[:, :, :3]  # Remove alpha channel
-        self.cameras[name]['image'] = image_array
+        colors_to_keep = [
+            # np.array([128, 64, 128]),  # Road
+            np.array([250, 170, 30]),  # Traffic light
+            np.array([220, 220, 0]),   # Traffic sign
+            np.array([220, 20, 60]),   # Pedestrian
+            np.array([255, 0, 0]),     # Rider
+            np.array([0, 0, 142]),     # Car
+            np.array([0, 0, 70]),      # Truck
+            np.array([0, 60, 100]),    # Bus
+            np.array([0, 80, 100]),    # Train
+            np.array([0, 0, 230]),     # Motorcycle
+            np.array([119, 11, 32]),   # Bicycle
+            np.array([45, 60, 150]),   # Water
+            np.array([157, 234, 50]),  # RoadLine
+            np.array([81, 0, 81]),     # Ground
+        ]
 
-    def get_image(self, position):
+        res = self.mask_specific_colors(image_array,colors_to_keep)
+
+        self.cameras[name]['image'] = res
+
+    def get_image(self):
         """Returns the semantic segmentation image for the specified camera position."""
-        if position in self.cameras:
-            return self.cameras[position]['image']
-        else:
-            return None
+        # if position in self.cameras:
+        return self.cameras
+        # else:
+        #     return None
 
     def destroy(self):
         # Destroy all camera actors

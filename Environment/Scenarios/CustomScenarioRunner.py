@@ -9,7 +9,7 @@ from Environment.Sensors.ImuSensor import ImuSensor
 from Environment.Sensors.SemanticLidarSensor import SemanticLidarSensor
 from Environment.Sensors.DepthCameraSensor import DepthCameraSensor
 from Environment.Sensors.TrafficLightSensor import TrafficLightSensor
-from Environment.Sensors.SpeedLimitSensor import SpeedLimitSensor
+from Environment.Sensors.TrafficSignSensor import SpeedLimitSensor
 from Environment.Sensors.RadarSensor import RadarSensor
 from Environment.Sensors.LaneInvasionSensor import LaneInvasionSensor
 from Environment.Sensors.WeatherSensor import WeatherSensor

@@ -30,4 +30,4 @@ class RgbCameraSensor:
 
     def _rgb_camera_callback(self, camera_data, image):
         """Callback for processing camera images."""
-        camera_data['image'] = np.reshape(np.copy(image.raw_data), (image.height, image.width, 4))
+        camera_data['image'] = np.reshape(np.copy(image.raw_data), (image.height, image.width, 4))[:, :, :3]
