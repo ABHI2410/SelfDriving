@@ -5,6 +5,8 @@ import math
 import numpy as np
 import open3d as o3d
 import time
+import sys 
+sys.path.append('/home/carla/Desktop/Carla/PythonAPI/carla')
 from Environment.Actors.Vehicle import Vehicle
 
 class Carla:
@@ -13,7 +15,7 @@ class Carla:
         self.world = self.client.get_world()
         self.specator = self.world.get_spectator().get_transform().location
         self.spawn_points = self.world.get_map().get_spawn_points()
-        spawn_point = random.choice(self.spawn_points)
+        spawn_point = self.spawn_points[0]
         # spawn_point = carla.Transform(self.specator)
         self.actor = Vehicle(self.client,spawn_point, attach_sensors = True)
 
@@ -24,7 +26,7 @@ class Carla:
             if cv2.waitKey(1) == ord('q'):
                 quit = True
                 break
-            # image = self.actor.semanticSegmentationSensor.get_image()
+            image = self.actor.semanticSegmentationSensor.get_image()
             rgb_camera = self.actor.rgbCameraSensor.get_image()
             self.actor.trafficLightSensor.update()
             Traffic_light = self.actor.trafficLightSensor.get_traffic_light_state()
@@ -37,15 +39,15 @@ class Carla:
             estimate_throttle = self.actor.maintain_speed(speed,20)
             self.actor.control(estimate_throttle,0)
 
-            # segmented= cv2.resize(image.get('Front').get('image'), (640, 480))
-            rgb_camera = cv2.resize(rgb_camera,(1080,720))
+            segmented= cv2.resize(image.get('Front').get('image'), (640, 480))
+            rgb_camera = cv2.resize(rgb_camera,(640,480))
             if Traffic_light: 
                 rgb_camera = cv2.putText(rgb_camera, f"Traffic Light: {str(Traffic_light)}", (30,50),cv2.FONT_HERSHEY_COMPLEX,0.5,(255,255,255),1,cv2.LINE_AA)
             if lane_invasion[0]:
                 rgb_camera = cv2.putText(rgb_camera, f'{str(lane_invasion[1].get("actor"))} crossed {str(lane_invasion[1].get("crossed_line"))}', (30,50),cv2.FONT_HERSHEY_COMPLEX,0.5,(255,255,255),1,cv2.LINE_AA)
 
-            # new_img = np.concatenate((segmented,rgb_camera),axis=1)
-            cv2.imshow('Carla', rgb_camera)
+            new_img = np.concatenate((segmented,rgb_camera),axis=1)
+            cv2.imshow('Carla', new_img)
 
 
         # self.actor.destroy()
