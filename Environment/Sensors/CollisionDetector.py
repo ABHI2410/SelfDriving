@@ -5,7 +5,6 @@ import math
 
 class CollisionDetector:
     def __init__(self, world, vehicle, blueprints):
-        print(type(vehicle))
         self.parent = vehicle
         self.world = world
         self.history = []
@@ -20,9 +19,6 @@ class CollisionDetector:
             return intensity
         return 0
 
-    def has_collided(self):
-        """Returns True if a collision has occurred, False otherwise."""
-        return bool(self.history)
 
     def destroy(self):
         """Destroys the sensor."""

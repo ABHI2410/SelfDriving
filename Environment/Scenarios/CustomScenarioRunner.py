@@ -9,11 +9,11 @@ from Environment.Sensors.ImuSensor import ImuSensor
 from Environment.Sensors.SemanticLidarSensor import SemanticLidarSensor
 from Environment.Sensors.DepthCameraSensor import DepthCameraSensor
 from Environment.Sensors.TrafficLightSensor import TrafficLightSensor
-from Environment.Sensors.TrafficSignSensor import SpeedLimitSensor
+# from Environment.Sensors.TrafficSignSensor import SpeedLimitSensor
 from Environment.Sensors.RadarSensor import RadarSensor
 from Environment.Sensors.LaneInvasionSensor import LaneInvasionSensor
 from Environment.Sensors.WeatherSensor import WeatherSensor
-
+from Environment.Sensors.VehicleCameras import VehicleCameras
 
 from Environment.Scenarios.CustomScenarioManager import CustomScenarioManager
 sys.path.append(SCENARIO_RUNNER_PATH)
@@ -26,31 +26,33 @@ from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 
 def attach_sensors(world,vehicle,blueprints):
-        collisionSensor = CollisionDetector(world, vehicle, blueprints)
-        rgbCameraSensor = RgbCameraSensor(world, vehicle, blueprints)
-        gnssSensor = GnssSensor(world, vehicle, blueprints)
-        imuSensor = ImuSensor(world, vehicle, blueprints)
-        semanticLidarSensor = SemanticLidarSensor(world, vehicle, blueprints)
-        depthCameraSensor = DepthCameraSensor(world,vehicle,blueprints)
-        trafficLightSensor = TrafficLightSensor(world, vehicle, blueprints)
-        speedLimitSensor = SpeedLimitSensor(world, vehicle, blueprints)
-        radarSensor = RadarSensor(world, vehicle, blueprints)
-        laneInvasionSensor = LaneInvasionSensor(world, vehicle, blueprints)
-        # pedestrianDetectionSensor = PedestrianDetectionSensor(world, vehicle)
-        weatherSensor = WeatherSensor(world)
-        return {
-            "Collision_Sensor": collisionSensor,
-            "RGB Sensor" : rgbCameraSensor,
-            "GNSS Sensor" : gnssSensor,
-            "IMU Sensor" : imuSensor,
-            "Semantic Lidar Sensor" : semanticLidarSensor,
-            "Depth Camera Sensor" : depthCameraSensor,
-            "Traffic Light Sensor" : trafficLightSensor,
-            "Speed Limit Sensor" : speedLimitSensor,
-            "Radar Sensor" : radarSensor,
-            "Lane Invsion Sensor" : laneInvasionSensor,
-            "Weather Sensor" : weatherSensor
-        }
+    collisionSensor = CollisionDetector(world, vehicle, blueprints)
+    rgbCameraSensor = RgbCameraSensor(world, vehicle, blueprints)
+    gnssSensor = GnssSensor(world, vehicle, blueprints)
+    imuSensor = ImuSensor(world, vehicle, blueprints)
+    semanticLidarSensor = SemanticLidarSensor(world, vehicle, blueprints)
+    depthCameraSensor = DepthCameraSensor(world,vehicle,blueprints)
+    trafficLightSensor = TrafficLightSensor(world, vehicle, blueprints)
+    # speedLimitSensor = SpeedLimitSensor(world, vehicle, blueprints)
+    radarSensor = RadarSensor(world, vehicle, blueprints)
+    laneInvasionSensor = LaneInvasionSensor(world, vehicle, blueprints)
+    # pedestrianDetectionSensor = PedestrianDetectionSensor(world, vehicle)
+    scemantic_cameras = VehicleCameras(world,vehicle)
+    weatherSensor = WeatherSensor(world)
+    return {
+        "Collision_Sensor": collisionSensor,
+        "Scemantic_Camera": scemantic_cameras,
+        "RGB Sensor" : rgbCameraSensor,
+        "GNSS Sensor" : gnssSensor,
+        "IMU Sensor" : imuSensor,
+        "Semantic Lidar Sensor" : semanticLidarSensor,
+        "Depth Camera Sensor" : depthCameraSensor,
+        "Traffic Light Sensor" : trafficLightSensor,
+        # "Speed Limit Sensor" : speedLimitSensor,
+        "Radar Sensor" : radarSensor,
+        "Lane Invsion Sensor" : laneInvasionSensor,
+        "Weather Sensor" : weatherSensor
+    }
 class CustomScenarioRunner(ScenarioRunner):   
     def __init__(self, args):
         super().__init__(args)

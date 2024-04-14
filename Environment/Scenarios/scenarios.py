@@ -9,7 +9,7 @@ from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 
 class Scenario():
-    def __init__(self,world,scenario,timeout_duration):
+    def __init__(self,world,scenario,timeout_duration=200):
         self.additionalScenario='' 
         self.agent=None 
         self.agentConfig='' 

@@ -4,6 +4,8 @@ import time
 import py_trees
 import carla
 import sys
+import open3d as o3d
+
 from Constants import SCENARIO_RUNNER_PATH
 sys.path.append(SCENARIO_RUNNER_PATH)
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
@@ -12,6 +14,31 @@ from srunner.scenariomanager.timer import GameTime
 from srunner.scenariomanager.watchdog import Watchdog
 
 class CustomScenarioManager(ScenarioManager):
+
+
+    def __init__(self,debug, sync, timeout):
+        super().__init__()
+        self.vis = None
+        self.pcd = None
+
+    def visualize_point_cloud(self, pcd):
+        if pcd is not None and not pcd.is_empty():
+            self.vis.clear_geometries()  # Clear previous geometries
+            self.vis.add_geometry(pcd)  # Add new or updated point cloud
+            self.vis.poll_events()
+            self.vis.update_renderer()
+        else:
+            print("No points to display in the point cloud.")
+
+    def start_visualization(self):
+        if self.vis is None:
+            self.vis = o3d.visualization.Visualizer()
+            self.vis.create_window()
+
+    def stop_visualization(self):
+        if self.vis is not None:
+            self.vis.destroy_window()
+            self.vis = None
 
     def maintain_speed(self, speed, preferred_speed):
         if speed >= preferred_speed:
@@ -22,28 +49,25 @@ class CustomScenarioManager(ScenarioManager):
             return 0.4
         
     def _game(self,world,sensors):
+        self.start_visualization()
         spectator = world.get_spectator()
-        rgb_image = sensors.get("RGB Sensor").get_image()
-        steering_angle = 0
+        scemantic_camers = sensors.get("Scemantic_Camera").get_image()
+        lane_invasion = sensors.get("Lane Invsion Sensor").get_data()
+        collisons = sensors.get("Collision_Sensor").get_collision_history()
+        gnss_sensor = sensors.get("GNSS Sensor").get_location()
+        imu_sensor = sensors.get("IMU Sensor").get_data()
+        scemantic_lidar = sensors.get("Semantic Lidar Sensor")._get_point_cloud()
+        nearby_vehicle = sensors.get("Semantic Lidar Sensor").get_vehicle_distances()
+        traffic_light = sensors.get("Traffic Light Sensor").get_traffic_light_state()
+        # self.visualize_point_cloud(scemantic_lidar)
+        # self.update_point_cloud(self.vis,scemantic_lidar,scemantic_lidar)
         v = self.ego_vehicles[0].get_velocity()
         speed = round(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2),0)
-        rgb_image = cv2.putText(rgb_image, f"Speed: {str(int(speed))} kmh", (30,50),cv2.FONT_HERSHEY_COMPLEX,0.5,(255,255,255),1,cv2.LINE_AA)
-        
-        estimate_throttle = self.maintain_speed(speed,20)
+        estimate_throttle = self.maintain_speed(speed,40)
         self.ego_vehicles[0].apply_control(carla.VehicleControl(throttle=estimate_throttle, steer=0))
         vehicle_location = self.ego_vehicles[0].get_transform()
         spectator.set_transform(carla.Transform(carla.Location(vehicle_location.location.x-5,vehicle_location.location.y,vehicle_location.location.z+40) , carla.Rotation(pitch=-90)))
 
-        # Adjust throttle based on speed limit and traffic light state
-        # if traffic_light_state == carla.TrafficLightState.Red or speed > speed_limit:
-        #     estimate_throttle = 0
-        # else:
-        #     estimate_throttle = self.scene.vehicle.maintain_speed(speed, 20)
-
-        # self.scene.vehicle.control(estimate_throttle, steering_angle)
-
-        # Display sensor data
-        # cv2.imshow('Carla', rgb_image)
 
     def run_scenario(self,sensors):
         """
@@ -66,6 +90,7 @@ class CustomScenarioManager(ScenarioManager):
                     timestamp = snapshot.timestamp
             if timestamp:
                 self._game(world,sensors)
+                self.vis.destroy_window()
                 self._tick_scenario(timestamp)
 
         self.cleanup()

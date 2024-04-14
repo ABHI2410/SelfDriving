@@ -1,102 +1,138 @@
 import os
-import sys
+import cv2
+import math
 import carla
+import numpy as np
 import gymnasium as gym
+import xml.etree.ElementTree as ET
 
-sys.path.append("/home/carla/Desktop/Carla/leaderboard")
-from leaderboard.utils.statistics_manager import StatisticsManager, FAILURE_MESSAGES
-from leaderboard.utils.route_indexer import RouteIndexer
-from leaderboard.scenarios.route_scenario import RouteScenario
+from Actors.Vehicle import Vehicle
 
-LEADERBOARD_ROOT = os.environ["LEADERBOARD_ROOT"]
-ROUTE = os.path.join(LEADERBOARD_ROOT, "data/routes_devtest.xml")
-ROUTE_SUBSET = 0
-REPETITIONS = 1
-DEBUG_CHALLENGE=1
+from srunner.scenariomanager.scenario_manager import ScenarioManager
+from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
+from srunner.tools.scenario_parser import ScenarioConfigurationParser
 
-CHECKPOINT_ENDPOINT = "../RL/results.json"
-CHECKPOINT_DEBUG = "../RL/results.txt"
-
-
-class CustomLeaderboardEvaluator():
-    def __init__(self, world, statistics_manager,resume):
-        self.world = world
-        self.resume = resume
-        self.checkpoint = CHECKPOINT_ENDPOINT
-        self.statistics_manager = statistics_manager
-        self.sensors_initialized = False
-
-    def load_world(self):
-        settings = self.world.get_settings()
-        settings.title_stream_distance = 650 
-        settings.actor_active_distance = 650 
-        self.world.apply_settings(settings)
-
-        self.world.reset_all_traffic_lights()
-        
-
-    def load_and_run(self,config):
-        print("Statrting leaderboard scenario")
-        route_name = f"{config.name}_rep{config.repetition_index}"
-        self.statistics_manager.create_route_data(route_name,config.index)
-        try:
-            self.load_world(config.town)
-            self.route_scenario = RouteScenario(world = self.world,config = config, debug_mode=DEBUG_CHALLENGE)
-            self.statistics_manager.set_scenario(self.route_scenario)
-        except Exception:
-            print("The scenario could not be loaded")
-            print()
-
-    def run(self,routes,repetitions,routes_subset):
-        route_indexer = RouteIndexer(routes, repetitions, routes_subset)
-        
-        # if self.resume:
-        #     resume = route_indexer.validate_and_resume(self.checkpoint)
-        #     if resume:
-        #         self.statistics_manager.add_file_records(self.checkpoint)
-
-        # else:
-        #     self.statistics_manager.clear_records()
-        # self.statistics_manager.save_progress(route_indexer.index,route_indexer.total)
-        # self.statistics_manager.write_statistics()
-
-        crashed = False
-        while route_indexer.peek() and not crashed:
-            config = route_indexer.get_next_config()
-            crashed = self.load_and_run(config)
-
-        # if not crashed:
-        #     self.statistics_manager.compute_global_statistics()
-        #     self.statistics_manager.validate_and_write_statistics(self.sensors_initialized, crashed)
-
-        return crashed
-        
-
-    
-
-class EnvVariables():
-    def __init__(self) -> None:
-        self.debug = 0
-        self.record = ''
-        self.timeout = 300.0
-        self.routes = ROUTE
-        self.route_subset = ROUTE_SUBSET
-        self.repetitions = REPETITIONS
-        self.agent = '/home/carla/Desktop/SelfDriving/Carla.py'
-        self.agent_config = ''
-        self.track = "SENSORS"
-        self.resume = False
-        self.checkpoint = CHECKPOINT_ENDPOINT
-        self.checkpoint_debug = CHECKPOINT_DEBUG
 class Environemnt(gym.Env):
     def __init__(self) -> None:
         super().__init__()
-        
-    def main(self):
-        envVars = EnvVariables()
-        statistics_manager = StatisticsManager(envVars.checkpoint,envVars.checkpoint_debug)
-        leaderboard = CustomLeaderboardEvaluator(statistics_manager,envVars.checkpoint,False)
-        leaderboard.run(envVars.routes,envVars.repetitions,envVars.route_subset)
 
-obj = Environemnt()
-obj.main()
+    def load_scenarios_from_xml(self,path):
+        tree = ET.parse(path)
+        root = tree.getroot()
+        scenarios = []
+        for scenario in root.findall('scenario'):
+            details = {
+                'name': scenario.get('name'),
+                'type': scenario.get('type'),
+                'town': scenario.get('town'),
+                'actors': []
+            }
+            # Extract ego vehicle and other actors
+            ego = None
+            for actor in scenario:
+                actor_details = {
+                    'x': float(actor.get('x')),
+                    'y': float(actor.get('y')),
+                    'z': float(actor.get('z')),
+                    'yaw': float(actor.get('yaw')),
+                    'model': actor.get('model'),
+                    'is_ego': actor.tag == 'ego_vehicle'
+                }
+                details['actors'].append(actor_details)
+            scenarios.append(details)
+        return scenarios
+    
+    def setup_scenario(self,client, scenario):
+        actors = []
+        for actor_info in scenario['actors']:
+            transform = carla.Transform(
+                carla.Location(x=actor_info['x'], y=actor_info['y'], z=actor_info['z']),
+                carla.Rotation(yaw=actor_info['yaw'])
+            )
+            vehicle = Vehicle(client, transform, actor_info['model'],is_ego=actor_info['is_ego'])
+            actors.append(vehicle)
+        return actors
+    
+    def run_scenario(self,scenario):
+        client = carla.Client('localhost', 2000)
+        client.set_timeout(10.0)
+        world = client.load_world(scenario['town'])
+        try:
+            actors = self.setup_scenario(client, scenario)
+            vehicle = next((actor for actor in actors if actor.is_ego))
+            print(vehicle)
+            if vehicle is None:
+                raise ValueError("No vehicle found in the scenario actors.")
+
+            while True:
+                world.tick()
+                # Example of breaking the loop with a keyboard event in a non-blocking way
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
+                # Example sensor data retrieval
+                image = vehicle.semanticSegmentationSensor.get_image()
+                rgb_camera = vehicle.rgbCameraSensor.get_image()
+                vehicle.trafficLightSensor.update()
+                Traffic_light = vehicle.trafficLightSensor.get_traffic_light_state()
+                lane_invasion = vehicle.laneInvasionSensor.get_data()
+                v = vehicle.get_velocity()
+                speed = round(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2), 0)
+                estimate_throttle = vehicle.maintain_speed(speed, 20)
+                vehicle.control(estimate_throttle, 0)
+
+                # Visualization
+                segmented = cv2.resize(image.get('Front').get('image'), (640, 480))
+                rgb_camera = cv2.resize(rgb_camera, (640, 480))
+                new_img = np.concatenate((segmented, rgb_camera), axis=1)
+                cv2.imshow('Carla', new_img)
+
+        finally:
+            # Clean up all actors
+            for actor in actors:
+                actor.destroy()
+            cv2.destroyAllWindows()
+
+    def run(self):
+        scenarios = self.load_scenarios_from_xml(os.path.join(os.getcwd(), "examples/NoSignalJunction.xml"))
+        # Run a specific scenario
+        for scenario in scenarios:
+            if scenario['name'] == 'NoSignalJunctionCrossing':
+
+                self.run_scenario(scenario)
+                break
+
+
+
+# obj = Environemnt()
+# obj.run()
+
+
+class AdvancedEnvironment(gym.Env):
+    def __init__(self, carla_host='localhost', carla_port=2000):
+        super().__init__()
+        self.client = carla.Client(carla_host, carla_port)
+        self.client.set_timeout(10.0)
+        self.world = self.client.get_world()
+        # Initialize scenario manager without debug_mode in constructor
+        self.scenario_manager = ScenarioManager(self.world)
+        # Assuming there's a method to set debug mode, use it here if available
+        self.scenario_manager.set_debug_mode(True)
+
+    def load_and_run_scenario(self, config_path):
+        scenario_configurations = ScenarioConfigurationParser.parse_scenario_configuration(config_path, self.world)
+        for config in scenario_configurations:
+            self.scenario_manager.load_scenario(config)
+            self.scenario_manager.start_scenario()
+            while not self.scenario_manager.scenario_completed():
+                self.world.tick()
+            self.scenario_manager.stop_scenario()
+            self.scenario_manager.cleanup()
+
+    def run(self):
+        config_path = os.path.join(os.getcwd(), "scenario_configurations.xml")
+        self.load_and_run_scenario(config_path)
+
+# Usage
+env = AdvancedEnvironment()
+env.run()

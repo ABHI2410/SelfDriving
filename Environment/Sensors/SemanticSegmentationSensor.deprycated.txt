@@ -1,10 +1,11 @@
 import carla
 import numpy as np
+from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 
 
 class LaneDetectionSensor:
-    def __init__(self, vehicle, height=960, width=1280, fov=110, location=(0.0, 0.0, 2.5), rotation=(0.0, 0.0, 0.0)):
-        self.vehicle = vehicle
+    def __init__(self, height=960, width=1280, fov=110, location=(0.0, 0.0, 2.5), rotation=(0.0, 0.0, 0.0)):
+
         self.height = height
         self.width = width
         self.fov = fov
