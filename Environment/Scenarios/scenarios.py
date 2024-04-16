@@ -105,6 +105,7 @@ class Scenario():
         """
         Spawn or update the ego vehicles
         """
+        print("Creating ego vehicle ")
         self.blueprints = CarlaDataProvider.get_client().get_world().get_blueprint_library()
         for vehicle in ego_vehicles:
             self.ego_vehicles.append(CarlaDataProvider.request_new_actor(vehicle.model,
@@ -124,6 +125,7 @@ class Scenario():
             self.world.tick()
         else:
             self.world.wait_for_tick()
+        print("Created ego vehicle ")
     
     def _cleanup(self):
         """
@@ -150,6 +152,7 @@ class Scenario():
             scenario = RouteScenario(world=self.world,
                                         config=config,
                                         debug_mode=self._args.debug)
+            route_waypoints = scenario.route
         except Exception as exception:                 
             print("The scenario cannot be loaded")
             traceback.print_exc()
@@ -159,13 +162,10 @@ class Scenario():
 
 
         try:
-
             # Load scenario and run it
             self.manager.load_scenario(scenario)
             self.manager.run_scenario()
-
             scenario.remove_all_actors()
-
             result = True
 
         except Exception as e:              # pylint: disable=broad-except

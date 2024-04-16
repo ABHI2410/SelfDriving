@@ -6,8 +6,8 @@ class RgbCameraSensor:
         self.parent = vehicle
         self.world = world
         rgb_camera_bp = blueprints.find('sensor.camera.rgb')
-        rgb_camera_bp.set_attribute('image_size_x', '1080')
-        rgb_camera_bp.set_attribute('image_size_y', '720')
+        rgb_camera_bp.set_attribute('image_size_x', '640')
+        rgb_camera_bp.set_attribute('image_size_y', '480')
         rgb_camera_bp.set_attribute('fov', '110')
         transform = carla.Transform(carla.Location(z=3, x=-5))
         self.sensor = world.spawn_actor(rgb_camera_bp, transform, attach_to=vehicle)

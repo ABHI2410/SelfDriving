@@ -26,7 +26,7 @@ from Environment.Sensors.RadarSensor import RadarSensor
 from Environment.Sensors.LaneInvasionSensor import LaneInvasionSensor
 from Environment.Sensors.WeatherSensor import WeatherSensor
 from Environment.Sensors.VehicleCameras import VehicleCameras
-
+# from RL.ModelDefination import ProcessData
 
 class CustomScenarioManager(ScenarioManager):
 
@@ -64,7 +64,6 @@ class CustomScenarioManager(ScenarioManager):
             return 0.4
         
     def _game(self,world,sensors):
-        # self.start_visualization()
         spectator = world.get_spectator()
         rgb_img = sensors.get("RGB Sensor").get_image()
         scemantic_camers = sensors.get("Scemantic_Camera").get_image()
@@ -75,10 +74,12 @@ class CustomScenarioManager(ScenarioManager):
         scemantic_lidar = sensors.get("Semantic Lidar Sensor")._get_point_cloud()
         nearby_vehicle = sensors.get("Semantic Lidar Sensor").get_vehicle_distances()
         traffic_light = sensors.get("Traffic Light Sensor").get_traffic_light_state()
-        # self.visualize_point_cloud(scemantic_lidar)
-        # self.update_point_cloud(self.vis,scemantic_lidar,scemantic_lidar)
         v = self.ego_vehicles[0].get_velocity()
         speed = round(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2),0)
+        # data = ProcessData(rgb_img,scemantic_camers,lane_invasion,collisons,
+        #                       gnss_sensor,imu_sensor,scemantic_lidar,nearby_vehicle,traffic_light,speed)
+        # processedData = data.get_tensors()
+        print(lane_invasion)
         estimate_throttle = self.maintain_speed(speed,40)
         self.ego_vehicles[0].apply_control(carla.VehicleControl(throttle=estimate_throttle, steer=0))
         vehicle_location = self.ego_vehicles[0].get_transform()

@@ -19,7 +19,9 @@ class LaneInvasionSensor:
             invasion_detail = {
                 'frame': event.frame,
                 'timestamp': event.timestamp,
-                'crossed_lane_types': crossing_type[0]
+                'crossed_lane_types': crossing_type[0],
+                'mark_color' : [str(lane_marking.color) for lane_marking in event.crossed_lane_markings][0],
+                'lane_change' : [str(lane_marking.lane_change) for lane_marking in event.crossed_lane_markings][0]
             }
             self.lane_invasion = invasion_detail
     
