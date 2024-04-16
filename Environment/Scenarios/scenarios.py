@@ -7,7 +7,6 @@ from datetime import datetime
 from Constants import SCENARIO_RUNNER_PATH
 sys.path.append(SCENARIO_RUNNER_PATH)
 from Environment.Scenarios.CustomScenarioManager import CustomScenarioManager
-from srunner.scenariomanager.scenario_manager import ScenarioManager
 from srunner.scenarios.route_scenario import RouteScenario
 from srunner.tools.route_parser import RouteParser
 from srunner.scenarios import *
@@ -105,7 +104,6 @@ class Scenario():
         """
         Spawn or update the ego vehicles
         """
-        print("Creating ego vehicle ")
         self.blueprints = CarlaDataProvider.get_client().get_world().get_blueprint_library()
         for vehicle in ego_vehicles:
             self.ego_vehicles.append(CarlaDataProvider.request_new_actor(vehicle.model,
@@ -152,12 +150,13 @@ class Scenario():
             scenario = RouteScenario(world=self.world,
                                         config=config,
                                         debug_mode=self._args.debug)
-            route_waypoints = scenario.route
+            self.route_waypoints = scenario.route
+            
         except Exception as exception:                 
             print("The scenario cannot be loaded")
             traceback.print_exc()
             print(exception)
-            # self._cleanup()
+            self._cleanup()
             return False
 
 

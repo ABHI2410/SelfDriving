@@ -1,13 +1,5 @@
 import os 
 os.environ["SCENARIO_RUNNER_ROOT"] = "/home/carla/Desktop/Carla/scenario_runner/"
-
-import carla
-import random
-import cv2
-import math
-import numpy as np
-import time
-from Environment.Actors.Vehicle import Vehicle
 from Environment.Scenarios.scenarios import Scenario
 class Carla:
     def __init__(self,path):
@@ -27,13 +19,16 @@ class Carla:
         self.reloadWorld = True
         self.repetitions = 1
 
-no_of_routes = 89 
-os.chdir("../Carla/scenario_runner/srunner/data")
-file_path = os.getcwd()
-os.chdir("../../../../SelfDriving")
-files = os.listdir(file_path)
-route_data = [file for file in files if "town10" in file][0]
-training_route = os.path.join(file_path,route_data)
-obj = Carla(training_route)
-sce = Scenario(obj)
-sce.run()
+if __name__ == "__main__":
+
+    number_of_routes = 89
+    os.chdir("../Carla/scenario_runner/srunner/data")
+    file_path = os.getcwd()
+    os.chdir("../../../../SelfDriving")
+    files = os.listdir(file_path)
+    route_data = [file for file in files if "town10" in file][0]
+    training_route = os.path.join(file_path,route_data)
+
+    obj = Carla(training_route)
+    sce = Scenario(obj)
+    result = sce.run_route()

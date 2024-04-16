@@ -8,3 +8,4 @@ SCENARIO_RUNNER_PATH = os.path.join(current_dir, "..", "Carla", "scenario_runner
 LEADERBOARD_PATH = os.path.join(current_dir, "..", "Carla", "leaderboard")
 
 # You can access these constants from other files by importing constant.py
+

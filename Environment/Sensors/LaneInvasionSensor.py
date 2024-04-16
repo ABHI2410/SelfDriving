@@ -4,6 +4,7 @@ class LaneInvasionSensor:
     def __init__(self, world, vehicle,blueprint):
         self.vehicle = vehicle
         self.world = world
+        self.history = []
         self.lane_invasion = None
         self.lane_invasion_detected = False
         lane_invasion_blueprint = blueprint.find('sensor.other.lane_invasion')
@@ -24,6 +25,7 @@ class LaneInvasionSensor:
                 'lane_change' : [str(lane_marking.lane_change) for lane_marking in event.crossed_lane_markings][0]
             }
             self.lane_invasion = invasion_detail
+            self.history.appeend(self.lane_invasion)
     
     def reset(self):
         self.lane_invasion_detected = False
